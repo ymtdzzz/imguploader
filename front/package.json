@@ -53,6 +53,7 @@
     "eslint-plugin-react": "^7.21.5",
     "prettier": "^2.1.2",
     "react-dropzone": "^11.2.4",
+    "serverless-s3-sync": "^1.15.0",
     "styled-components": "^5.2.1"
   }
 }

@@ -4,6 +4,8 @@ import styled from 'styled-components'
 
 import GlobalStyle from './components/GlobalStyle'
 import SelectImageCard from './components/organisms/SelectImageCard'
+import UploadingCard from './components/organisms/UploadingCard'
+import CompleteCard from './components/organisms/CompleteCard'
 
 const MainContainer = styled.div`
   height: 100%;
@@ -19,6 +21,8 @@ function App(): ReactElement {
       <GlobalStyle />
       <MainContainer>
         <SelectImageCard />
+        <UploadingCard />
+        <CompleteCard />
       </MainContainer>
     </>
   )

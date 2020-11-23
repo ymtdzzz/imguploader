@@ -1,7 +1,8 @@
 import styled from 'styled-components'
 
 const CardBaseStyle = styled.div`
-  min-width: 500px;
+  min-width: 30vw;
+  max-width: 30vw;
   border-radius: 10px;
   background-color: white;
   text-align: center;

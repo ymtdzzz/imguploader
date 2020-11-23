@@ -4,9 +4,14 @@ import CardBaseStyle from './CardBaseStyle'
 import CardDescHeader from '../molecules/CardDescHeader'
 import UploadImageForm from '../molecules/UploadImageForm'
 
-function SelectImageCard() {
-  const onImageChange = () => {
+export interface Props {
+  onImageChange: (file: File) => void;
+}
+
+function SelectImageCard(props: Props) {
+  const onImageChange = (f: File) => {
     console.log('image changed')
+    props.onImageChange(f)
   }
 
   return (

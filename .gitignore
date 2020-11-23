@@ -2,3 +2,9 @@
 front/.log/
 
 front/.serverless/
+
+api/ccov.zip
+
+api/lcov.info
+
+api/report/

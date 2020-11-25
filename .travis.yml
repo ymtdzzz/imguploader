@@ -1,0 +1,27 @@
+matrix:
+  include:
+    - language: rust
+      rust:
+        - nightly
+      cache: cargo
+      before_install:
+        - cd api
+      install:
+        - cargo install grcov rust-covfix
+        - nvm install 12.14.1 --latest-npm
+        - nvm alias default 12.14.1
+        - npm install serverless -g
+        - npm install
+        - sls config credentials --stage dev --provider aws --key "${AWS_ACCESS_KEY_ID}" --secret "${AWS_SECRET_ACCESS_KEY}"
+      before_script:
+        - cargo test
+      script:
+        - npm run coverage:ci-sendcov
+        - if [ "$TRAVIS_BRANCH" = "development" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is development which released to dev stage." && yarn deploy:dev; fi
+        - if [ "$TRAVIS_BRANCH" = "release" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is release which released to release stage." && yarn deploy:release; fi
+
+env:
+  global:
+    - secure: "1r6IneMewCqODRHLYOg/2ZgDoJJwcsbzAvbEwys2pl+kcDUOhQk/Fjn4W6tNqeDE6oF8Ak6I4nek2ic8HrC3pJ3FgeZi4O9E7RBjFjpVX4UBFn1w5GaIzKJM6VpUAvcNocyJrYgROL1IlIXDFwjozLl9doU87c/byY8vRCEWe+EyIC0NsrZ5JDQCsBShthr4wrnApR4K7LpCJbvgwdn5q41dd522iF2x0IMCuQVaZJ5uk9JkMWRGjdY5J/5LYop2QGGg9ksc97AcNkkWiq9WbE7BCzPN475w/rhtphQDr1KToEmOfYdMNinkfOTItk6UoLDsRjhjpb2a5yD9Nlayi5/r/+aLFGyeV7WAEs7BnqBP/6zsW3/yzc24Z72VKMhtiA5cY/0hqAIS4aaDHqGTG73SLE85f60sHMR+wf0zctF+ESkS7X9+1uSA/MYy0g+rnMSPFk+X3sV8fo5fYcko6B+W8w+Lyr4DoD/kc1+Eee2TYUdLx+iDN4FbazQtKAEDo2Qn1D/OYv6AWjdDCxJ66+ldWtqa1WHdKURUtxbt7Xi/Z6C63fxmVOV+CS7ok1GNGk1Cp4cLhyPxar0lT1BKI+TCRfflEHMFwtJuDt/iDqe3OvQexcDK2c1qs5Wrxju2y8XCYOZvipR1dPvRiC8uCyUnwOppU7hd16sdn41PyCo="
+    - secure: "yQhHRdmLBlhI5avT8WcNsLvyUxEQ1BBM/CqdUiYzl2aZMDmYQaeJc8eeDph8fkZi8wCW/lFb33YDBMeZTwE5qwZYGMVxYonFQavIZhon/msegq7cojLhXH67mpeDkBVxLqcr9iQGMVOeRiudtPGEsFJOnw1yA9gmou0zULxLeitCtIXSgej6nqNC6CoiGUk7qf/dTv+rgK/QMqQ6Zu4Vegg6ITjMFWIwvyLRYc5UaMjx5C+fsJQEi1PKguAe/N/MUX0Ov+Zu4p2if6P8Nljn/RD4xAMJHcFlSsUqnfRr8FtVK8SCkB6EHMFAY4yfF1q8GgFc0SDj3glTSD3vw7MwyjomBEYfnONxkH/Ei4hpzzFhFG+kH2Tt901XBEkoc9d1tFPa5RamRIaIyyHx5KMzFPPn7t+f6kyQEvVxubbzLC0EtwAr2qYkKm8Dt7NU4DVND6ChsQGCsmoOF0kS2JfW7rb+MfrpNb3rGNVkE28HS40tygCzPFutV9foDwIK1HDPL13g57QZWBf6ZYeraoegafuZ0tpNbYupPTETVrFCkmfH02bQlLTl6khEbVs1cfF2NUDI11dtqH+JZK05J6xeADhsGs/NCN8nc1RIKVdTDHYMvsb97LTbi6XMl0Mk04wn5w/KerYChoJMA2NrUEieH24NkWqRLDa++P63iroH1wI="
+    - secure: "YBNt3ULovKCHRDA+qFyWXrha38uiAi8jWMixHKsMRkjeC5wTC6MyKSQOHlESWLeOX9K9P46NCywVkiWEjpnzYkqt4CZLQb5JBf8LXblc0GQHIUzgXmQQ2GV+a0hz4RM3hxk4l/IKE6XPxZxXCEpkstbclux1UAg9RxACqpTKw86l8LNTWt6+wzRJJbupzlM+Boz5Zctccd8qUEZam7JV/aIycPatAxvHT4/HpRrloeFj434ac+9+Z69oaJ59LHO9m8+zZM1iYurTc+cgWxAKgf0KXWyO59A5X5vXvNGqMCmcs3TSvYW+/5M8tFqJJv0dfEWzvHnHHORcdfNSzUlrIZStYiZF1GplJbIGkhgbjUCxzgNLAN9Qaf30Zpovvk3ENmuE3nLwMyvqSJ6gt7vPJnmHU7omDqfPpQU50Usk2UiGwY1S6b1wJQjAYu2nnn+RTRYj1EmZz12Rnciv7nEGm2YGytzLjFCRprjw3DZgIeZLMfTBpTweKOqrt9tUoXK4YXneKRIeI7s6k423C10a+d5WAfHFdBl3t0Pse90KeqrRy7w54wIJW7PHfOx2lgszzkKW/VnRNBgSLLsiI1A6IbjmeIxHaJldyhbKzaevcxRhUpziy1jJMocmkfaE910ZBLxVqoHfogU6eAGKCfsxYhW6BXkmVb/N7g6SAFdEAa8="

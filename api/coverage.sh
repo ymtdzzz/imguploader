@@ -20,5 +20,5 @@ if [ $# = 0 ] || [ "$1" != "ontravis" ]; then
 fi
 
 if [ $# -gt 1 ] && [ "$2" = "sendcov" ]; then
-    bash <(curl -s https://codecov.io/bash) -f lcov.info -t "${CODECOV_TOKEN}"
+    bash <(curl -s https://codecov.io/bash) -f lcov.info -t "${CODECOV_TOKEN}" -cF api
 fi

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import styled, { keyframes, css } from 'styled-components'
 
 // This linear loading bar is referred to:
@@ -92,17 +92,6 @@ const start = keyframes`
   }
 `
 
-const end = keyframes`
-  from {
-    max-height: 0;
-    opacity: 0;
-  }
-  to {
-    max-height: 2px;
-    opacity: 1;
-  }
-`
-
 const LoaderContainer = styled.div`
   background: ${loaderStyle.linearBackground};
   height: ${loaderStyle.height};
@@ -129,22 +118,7 @@ const LoaderBar = styled.div<{primary: boolean}>`
   `}
 `
 
-const rotate = keyframes`
-from {
-  transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`
-
-const Rotate = styled.div`
-  display: inline-block;
-  animation: ${rotate} 2s linear infinite;
-  padding: 2rem 1rem;
-  font-size: 1.2rem;
-`
-function Loader() {
+function Loader(): ReactElement {
   return (
     <LoaderContainer>
       <LoaderBar primary={true} />

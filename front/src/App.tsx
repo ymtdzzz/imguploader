@@ -1,6 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react'
 import { Reset } from 'styled-reset'
-import styled, { css, keyframes } from 'styled-components'
+import styled from 'styled-components'
 import { Transition } from 'react-transition-group'
 
 import GlobalStyle from './components/GlobalStyle'
@@ -8,33 +8,12 @@ import SelectImageCard from './components/organisms/SelectImageCard'
 import UploadingCard from './components/organisms/UploadingCard'
 import CompleteCard from './components/organisms/CompleteCard'
 import { TransitionStatus } from 'react-transition-group/Transition'
-import { on } from 'cluster'
 
 const MainContainer = styled.div`
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-`
-
-const show = keyframes`
-  from {
-    opacity: 0;
-    display: block;
-  }
-  to {
-    opacity: 1;
-  }
-`
-
-const hide = keyframes`
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    display: none;
-  }
 `
 
 const Container = styled.div<{status: TransitionStatus}>`

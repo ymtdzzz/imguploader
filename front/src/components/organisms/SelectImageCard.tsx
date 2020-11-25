@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 
 import CardBaseStyle from './CardBaseStyle'
 import CardDescHeader from '../molecules/CardDescHeader'
@@ -8,7 +8,7 @@ export interface Props {
   onImageChange: (file: File) => void;
 }
 
-function SelectImageCard(props: Props) {
+function SelectImageCard(props: Props): ReactElement {
   const onImageChange = (f: File) => {
     console.log('image changed')
     props.onImageChange(f)

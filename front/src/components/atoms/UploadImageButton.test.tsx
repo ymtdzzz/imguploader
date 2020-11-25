@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, findByText } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 
 import UploadImageButton, { Props } from './UploadImageButton'
 

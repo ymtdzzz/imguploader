@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import styled from 'styled-components'
 import CopyToClipBoard from 'react-copy-to-clipboard'
 
@@ -40,7 +40,7 @@ export interface Props {
   imageUrl: string;
 }
 
-function UploadedImage(props: Props) {
+function UploadedImage(props: Props): ReactElement {
   return (
     <>
       <ImageContainer data-testid="uploaded-image">

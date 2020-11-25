@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
 
@@ -12,7 +12,7 @@ const IconStyle = styled.p`
   font-size: 2.5rem;
 `
 
-function CompleteCard() {
+function CompleteCard(): ReactElement {
   return (
     <CardBaseStyle>
       <IconStyle>

@@ -1,5 +1,5 @@
 [package]
-name = "imguploader-api"
+name = "geturl"
 version = "0.1.0"
 edition = "2018"
 
@@ -13,6 +13,9 @@ serde_json = "1.0.59"
 simple_logger = "1.11.0"
 log = "0.4.11"
 anyhow = "1.0.34"
-rusoto_core = "0.45.0"
-rusoto_s3 = "0.45.0"
-rusoto_mock = "0.45.0"
+chrono = "0.4"
+rusoto_core = { git = "https://github.com/zeroclock/rusoto", branch = "s3-post-policy" }
+rusoto_s3 = { git = "https://github.com/zeroclock/rusoto", branch = "s3-post-policy" }
+rusoto_mock = { git = "https://github.com/zeroclock/rusoto", branch = "s3-post-policy" }
+rusoto_credential = { git = "https://github.com/zeroclock/rusoto", branch = "s3-post-policy" }
+rusoto_signature = { git = "https://github.com/zeroclock/rusoto", branch = "s3-post-policy" }

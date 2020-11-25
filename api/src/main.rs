@@ -4,36 +4,37 @@ use serde_derive::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
 use log::{LevelFilter, error};
 use std::env;
-use rusoto_s3::{
-    S3,
-    S3Client,
-    PutObjectRequest,
-};
+use std::collections::HashMap;
+use chrono::{Utc, Duration};
 use rusoto_core::Region;
-use rusoto_mock::{
-    MockCredentialsProvider,
-    MockRequestDispatcher,
-    MockResponseReader,
-    ReadMockResponse,
-};
-
-const MOCK_KEY: &str = "AWS_MOCK_FLAG";
-const BUCKET_NAME_KEY: &str = "BUCKET_NAME";
-const LOCAL_KEY: &str = "LOCAL_FLAG";
+use rusoto_signature::PostPolicy;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct CustomEvent {
-    text_body: Option<String>,
+    content_length: Option<u64>,
+    content_type: Option<String>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
 struct CustomOutput {
     message: String,
+    url: String,
+    policy: HashMap<String, String>,
 }
 
-const MSG_EMPTY_TEXT_BODY: &str = "Empty text body.";
-const MSG_TEXT_BODY_TOO_LONG: &str = "Text body is too long (max: 100)";
+const MOCK_KEY: &str = "AWS_MOCK_FLAG";
+const BUCKET_NAME_KEY: &str = "BUCKET_NAME";
+const LOCAL_KEY: &str = "LOCAL_FLAG";
+const AWS_ACCESS_KEY_ID_KEY: &str = "AWS_ACCESS_KEY_ID";
+const AWS_SECRET_ACCESS_KEY_KEY: &str = "AWS_SECRET_ACCESS_KEY";
+const AWS_SESSION_TOKEN_KEY: &str = "AWS_SESSION_TOKEN";
+const MAX_CONTENT_LENGTH: u64 = 1024 * 1024;
+
+const MSG_CONTENT_LENGTH_TOO_LONG: &str = "Content-Length too long (max: 1.0MB).";
+const MSG_WRONG_CONTENT_TYPE: &str = "Content-Type must start with image/ .";
+const MSG_EMPTY_CONTENT_LENGTH: &str = "Content-Length is empty.";
+const MSG_EMPTY_CONTENT_TYPE: &str = "Content-Type is empty.";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -46,55 +47,78 @@ async fn main() -> Result<()> {
 }
 
 async fn geturl(event: CustomEvent, c: Context) -> Result<CustomOutput> {
-    if let None = event.text_body {
-        error!("Empty text body in request {}", c.request_id);
-        return Err(anyhow!(get_err_msg(400, MSG_EMPTY_TEXT_BODY)));
+    if let None = event.content_length {
+        error!("Empty Content-Length in request {}", c.request_id);
+        return Err(anyhow!(get_err_msg(400, MSG_EMPTY_CONTENT_LENGTH)));
     }
-    let text = event.text_body.unwrap();
-    if text.len() > 100 {
-        error!("text body is too long (max: 100) in request {}", c.request_id);
-        return Err(anyhow!(get_err_msg(400, MSG_TEXT_BODY_TOO_LONG)));
+    if let None = event.content_type {
+        error!("Empty Content-Type in request {}", c.request_id);
+        return Err(anyhow!(get_err_msg(400, MSG_EMPTY_CONTENT_TYPE)));
     }
-    let s3 = get_s3_client();
+    
+    let content_length = event.content_length.unwrap();
+    let content_type = event.content_type.unwrap();
+
+    if content_length > MAX_CONTENT_LENGTH {
+        error!("Content-Length is too long in request {}", c.request_id);
+        return Err(anyhow!(get_err_msg(400, MSG_CONTENT_LENGTH_TOO_LONG)));
+    }
+    if !content_type.starts_with("image/") {
+        error!("Content-Type doesn't start with image/ in request {}", c.request_id);
+        return Err(anyhow!(get_err_msg(400, MSG_WRONG_CONTENT_TYPE)));
+    }
+    
     let bucket_name = env::var(BUCKET_NAME_KEY)?;
-    s3.put_object(PutObjectRequest {
-        bucket: bucket_name.to_string(),
-        key: "test.txt".to_string(),
-        body: Some(text.into_bytes().into()),
-        acl: Some("public-read".to_string()),
-        ..Default::default()
-    }).await?;
+    let (url, policy) = get_policy(&bucket_name, "test.txt", content_length, &content_type).await?;    
 
     Ok(CustomOutput {
-        message: format!("Succeeded.")
+        message: format!("Succeeded."),
+        url,
+        policy,
     })
 }
 
-fn get_s3_client() -> S3Client {
-    let s3 = match env::var(MOCK_KEY) {
+async fn get_policy(bucket: &str, key: &str, content_length: u64, content_type: &str) -> Result<(String, HashMap<String, String>)> {
+    let region;
+    let mut access_key_id = "access-key-id".to_string();
+    let mut secret_access_key = "secret-access-key".to_string();
+    let mut session_token = "session-token".to_string();
+    match env::var(MOCK_KEY) {
         Ok(_) => {
             // Unit Test
-            S3Client::new_with(
-                MockRequestDispatcher::default().with_body(
-                    &MockResponseReader::read_response("mock_data", "s3_test.json")
-                ),
-                MockCredentialsProvider,
-                Default::default(),
-            )
+            region = Region::ApNortheast1;
         },
         Err(_) => {
             if env::var(LOCAL_KEY).unwrap() != "" {
                 // local
-                return S3Client::new(Region::Custom {
+                region = Region::Custom {
                     name: "ap-northeast-1".to_owned(),
-                    endpoint: "http://host.docker.internal:8000".to_owned(),
-                })
+                    endpoint: "http://localhost:8000".to_owned(),
+                };
+                access_key_id = "S3RVER".to_string();
+                secret_access_key = "S3RVER".to_string();
+            } else {
+                // cloud
+                region = Region::ApNortheast1;
+                access_key_id = env::var(AWS_ACCESS_KEY_ID_KEY).unwrap();
+                secret_access_key = env::var(AWS_SECRET_ACCESS_KEY_KEY).unwrap();
+                session_token = env::var(AWS_SESSION_TOKEN_KEY).unwrap();
             }
-            // cloud
-            return S3Client::new(Region::ApNortheast1)
-        },
-    };
-    s3
+        }
+    }
+    let expiration_date = Utc::now() + Duration::seconds(30);
+    let policy = PostPolicy::default()
+        .set_bucket_name(&bucket)
+        .set_region(&region)
+        .set_key(&key)
+        .set_content_type(&content_type)
+        .set_content_length_range(content_length, content_length)
+        .set_expiration(&expiration_date)
+        .set_access_key_id(&access_key_id)
+        .set_secret_access_key(&secret_access_key)
+        .set_session_token(&session_token)
+        .build_form_data();
+    Ok(policy.unwrap())
 }
 
 fn get_err_msg(code: u16, msg: &str) -> String {
@@ -110,49 +134,39 @@ mod tests {
         env::set_var(BUCKET_NAME_KEY, "test-bucket");
     }
 
-    #[test]
-    fn can_get_local_s3_client() {
-        env::set_var(LOCAL_KEY, "local");
-        let _s3 = get_s3_client();
-        assert!(true);
-    }
-
-    #[test]
-    fn can_get_cloud_s3_client() {
-        env::set_var(LOCAL_KEY, "");
-        let _s3 = get_s3_client();
-        assert!(true);
+    #[tokio::test]
+    async fn test_geturl_handler_handle_valid_request() {
+        setup();
+        let event = CustomEvent {
+            content_type: Some("image/png".to_string()),
+            content_length: Some(1024 * 1024),
+        };
+        let result = geturl(event, Context::default()).await.expect("expected Ok(_) value");
+        let key_list = [
+            "key", "x-amz-credential", "x-amz-algorithm", "Content-Type", "x-amz-signature",
+            "x-amz-security-token", "x-amz-date", "bucket", "policy",
+        ];
+        assert_eq!("Succeeded.", result.message);
+        assert_eq!("https://test-bucket.s3.ap-northeast-1.amazonaws.com", result.url);
+        for &key in key_list.iter() {
+            println!("check: {}", key);
+            assert!(result.policy.contains_key(key));
+        }
     }
 
     #[tokio::test]
-    async fn can_geturl_handler_handle_valid_request() {
+    async fn test_geturl_handler_handle_empty_content_length() {
         setup();
         let event = CustomEvent {
-            text_body: Some("Firstname".to_string())
-        };
-        let expected = CustomOutput {
-            message: "Succeeded.".to_string()
-        };
-        assert_eq!(
-            geturl(event, Context::default())
-                .await
-                .expect("expected Ok(_) value"),
-            expected
-        )
-    }
-
-    #[tokio::test]
-    async fn can_geturl_handler_handle_empty_text_body() {
-        setup();
-        let event = CustomEvent {
-            text_body: None
+            content_type: Some("image/png".to_string()),
+            content_length: None,
         };
         let result = geturl(event, Context::default()).await;
         assert!(result.is_err());
         if let Err(error) = result {
             assert_eq!(
                 error.to_string(),
-                format!("[400] {}", MSG_EMPTY_TEXT_BODY)
+                format!("[400] {}", MSG_EMPTY_CONTENT_LENGTH)
             )
         } else {
             // result must be Err
@@ -161,17 +175,58 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn can_geturl_handler_handle_text_body_too_long() {
+    async fn test_geturl_handler_handle_empty_content_type() {
         setup();
         let event = CustomEvent {
-            text_body: Some("12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901".to_owned())
+            content_type: None,
+            content_length: Some(5000),
         };
         let result = geturl(event, Context::default()).await;
         assert!(result.is_err());
         if let Err(error) = result {
             assert_eq!(
                 error.to_string(),
-                format!("[400] {}", MSG_TEXT_BODY_TOO_LONG)
+                format!("[400] {}", MSG_EMPTY_CONTENT_TYPE)
+            )
+        } else {
+            // result must be Err
+            panic!()
+        }
+    }
+
+    #[tokio::test]
+    async fn test_geturl_handler_handle_long_content_length() {
+        setup();
+        let event = CustomEvent {
+            content_type: Some("image/png".to_string()),
+            content_length: Some(1024 * 1024 + 1),
+        };
+        let result = geturl(event, Context::default()).await;
+        assert!(result.is_err());
+        if let Err(error) = result {
+            assert_eq!(
+                error.to_string(),
+                format!("[400] {}", MSG_CONTENT_LENGTH_TOO_LONG)
+            )
+        } else {
+            // result must be Err
+            panic!()
+        }
+    }
+
+    #[tokio::test]
+    async fn test_geturl_handler_handle_wrong_content_type() {
+        setup();
+        let event = CustomEvent {
+            content_type: Some("text/plain".to_string()),
+            content_length: Some(1024 * 1024),
+        };
+        let result = geturl(event, Context::default()).await;
+        assert!(result.is_err());
+        if let Err(error) = result {
+            assert_eq!(
+                error.to_string(),
+                format!("[400] {}", MSG_WRONG_CONTENT_TYPE)
             )
         } else {
             // result must be Err
@@ -179,3 +234,4 @@ mod tests {
         }
     }
 }
+

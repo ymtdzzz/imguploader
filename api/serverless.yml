@@ -50,15 +50,16 @@ resources:
         BucketName: ${self:custom.bucketName.${self:provider.stage}}
 
 custom:
+  defaultStage: dev
   s3:
     host: localhost
     directory: /tmp
     port: 8000
     vhostBuckets: false
   bucketName:
-    local: zeroclock-lambda-rust-bucket-local
-    dev: zeroclock-lambda-rust-bucket-dev
-    release: zeroclock-lambda-rust-bucket-release
+    local: offline-imguploader
+    dev: zeroclock-imguploader-development
+    release: zeroclock-imguploader-release
   localFlag:
     local: local
     dev: ''

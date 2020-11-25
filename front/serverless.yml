@@ -3,16 +3,20 @@ plugins:
   - serverless-s3-sync
 
 custom:
-  hostedZoneName: imguploader.zeroclock.dev
+  defaultStage: dev
+  hostedZoneName:
+    dev: d.imguploader.zeroclock.dev
+    release: imguploader.zeroclock.dev
   aliasHostedZoneId: Z2FDTNDATAQYW2
   s3Sync:
-    - bucketName: ${self:custom.hostedZoneName}
+    - bucketName: ${self:custom.hostedZoneName.${self:provider.stage}}
       localDir: build
 
 provider:
   name: aws
   runtime: nodejs12.x
   region: ap-northeast-1
+  stage: ${opt:stage, self:custom.defaultStage}
 
 resources:
   Resources:
@@ -20,7 +24,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         AccessControl: PublicRead
-        BucketName: ${self:custom.hostedZoneName}
+        BucketName: ${self:custom.hostedZoneName.${self:provider.stage}}
         WebsiteConfiguration:
           IndexDocument: index.html
     StaticSiteS3BucketPolicy:
@@ -82,9 +86,9 @@ resources:
             ViewerProtocolPolicy: https-only
           ViewerCertificate:
             SslSupportMethod: sni-only
-            AcmCertificateArn: 	arn:aws:acm:us-east-1:936630031871:certificate/989ab9a2-bfeb-4aeb-b9c4-a2cf7a90a5f8
+            AcmCertificateArn: arn:aws:acm:us-east-1:936630031871:certificate/989ab9a2-bfeb-4aeb-b9c4-a2cf7a90a5f8
           Aliases:
-            - ${self:custom.hostedZoneName}
+            - ${self:custom.hostedZoneName.${self:provider.stage}}
     StaticCloudFrontOriginAccessIdentity:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
       Properties:

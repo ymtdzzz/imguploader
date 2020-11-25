@@ -3,7 +3,10 @@ matrix:
     - language: rust
       rust:
         - nightly
-      cache: cargo
+      cache:
+        cargo: true
+        npm: true
+        yarn: true
       before_install:
         - cd api
       install:
@@ -17,6 +20,22 @@ matrix:
         - cargo test
       script:
         - npm run coverage:ci-sendcov
+        - if [ "$TRAVIS_BRANCH" = "development" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is development which released to dev stage." && yarn deploy:dev; fi
+        - if [ "$TRAVIS_BRANCH" = "release" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is release which released to release stage." && yarn deploy:release; fi
+    - language: node_js
+      node_js:
+        - 12
+      cache:
+        yarn: true
+        npm: true
+      before_install:
+        - cd front
+      install:
+        - npm install serverless -g
+        - yarn install
+      script:
+        - yarn test --coverage --watchAll=false
+        - bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info -t "${CODECOV_TOKEN}" -cF front
         - if [ "$TRAVIS_BRANCH" = "development" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is development which released to dev stage." && yarn deploy:dev; fi
         - if [ "$TRAVIS_BRANCH" = "release" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is release which released to release stage." && yarn deploy:release; fi
 

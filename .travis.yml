@@ -36,8 +36,8 @@ matrix:
       script:
         - yarn test --coverage --watchAll=false
         - bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info -t "${CODECOV_TOKEN}" -cF front
-        - if [ "$TRAVIS_BRANCH" = "development" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is development which released to dev stage." && yarn deploy:dev; fi
-        - if [ "$TRAVIS_BRANCH" = "release" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is release which released to release stage." && yarn deploy:release; fi
+        - if [ "$TRAVIS_BRANCH" = "development" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is development which released to dev stage." && yarn build && yarn deploy:dev; fi
+        - if [ "$TRAVIS_BRANCH" = "release" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "This is release which released to release stage." && yarn build && yarn deploy:release; fi
 
 env:
   global:

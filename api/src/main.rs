@@ -1,13 +1,13 @@
-use lambda::{handler_fn, Context};
 use anyhow::{anyhow, Result};
-use serde_derive::{Deserialize, Serialize};
-use simple_logger::SimpleLogger;
-use log::{LevelFilter, error};
-use std::env;
-use std::collections::HashMap;
-use chrono::{Utc, Duration};
+use chrono::{Duration, Utc};
+use lambda::{handler_fn, Context};
+use log::{error, LevelFilter};
 use rusoto_core::Region;
 use rusoto_signature::PostPolicy;
+use serde_derive::{Deserialize, Serialize};
+use simple_logger::SimpleLogger;
+use std::collections::HashMap;
+use std::env;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +38,10 @@ const MSG_EMPTY_CONTENT_TYPE: &str = "Content-Type is empty.";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    SimpleLogger::new().with_level(LevelFilter::Debug).init().unwrap();
+    SimpleLogger::new()
+        .with_level(LevelFilter::Debug)
+        .init()
+        .unwrap();
     lambda::run(handler_fn(geturl))
         .await
         // https://github.com/dtolnay/anyhow/issues/35
@@ -55,7 +58,7 @@ async fn geturl(event: CustomEvent, c: Context) -> Result<CustomOutput> {
         error!("Empty Content-Type in request {}", c.request_id);
         return Err(anyhow!(get_err_msg(400, MSG_EMPTY_CONTENT_TYPE)));
     }
-    
+
     let content_length = event.content_length.unwrap();
     let content_type = event.content_type.unwrap();
 
@@ -64,12 +67,15 @@ async fn geturl(event: CustomEvent, c: Context) -> Result<CustomOutput> {
         return Err(anyhow!(get_err_msg(400, MSG_CONTENT_LENGTH_TOO_LONG)));
     }
     if !content_type.starts_with("image/") {
-        error!("Content-Type doesn't start with image/ in request {}", c.request_id);
+        error!(
+            "Content-Type doesn't start with image/ in request {}",
+            c.request_id
+        );
         return Err(anyhow!(get_err_msg(400, MSG_WRONG_CONTENT_TYPE)));
     }
-    
+
     let bucket_name = env::var(BUCKET_NAME_KEY)?;
-    let (url, policy) = get_policy(&bucket_name, "test.txt", content_length, &content_type).await?;    
+    let (url, policy) = get_policy(&bucket_name, "test.txt", content_length, &content_type).await?;
 
     Ok(CustomOutput {
         message: format!("Succeeded."),
@@ -78,7 +84,12 @@ async fn geturl(event: CustomEvent, c: Context) -> Result<CustomOutput> {
     })
 }
 
-async fn get_policy(bucket: &str, key: &str, content_length: u64, content_type: &str) -> Result<(String, HashMap<String, String>)> {
+async fn get_policy(
+    bucket: &str,
+    key: &str,
+    content_length: u64,
+    content_type: &str,
+) -> Result<(String, HashMap<String, String>)> {
     let region;
     let mut access_key_id = "access-key-id".to_string();
     let mut secret_access_key = "secret-access-key".to_string();
@@ -87,7 +98,7 @@ async fn get_policy(bucket: &str, key: &str, content_length: u64, content_type: 
         Ok(_) => {
             // Unit Test
             region = Region::ApNortheast1;
-        },
+        }
         Err(_) => {
             if env::var(LOCAL_KEY).unwrap() != "" {
                 // local
@@ -141,13 +152,25 @@ mod tests {
             content_type: Some("image/png".to_string()),
             content_length: Some(1024 * 1024),
         };
-        let result = geturl(event, Context::default()).await.expect("expected Ok(_) value");
+        let result = geturl(event, Context::default())
+            .await
+            .expect("expected Ok(_) value");
         let key_list = [
-            "key", "x-amz-credential", "x-amz-algorithm", "Content-Type", "x-amz-signature",
-            "x-amz-security-token", "x-amz-date", "bucket", "policy",
+            "key",
+            "x-amz-credential",
+            "x-amz-algorithm",
+            "Content-Type",
+            "x-amz-signature",
+            "x-amz-security-token",
+            "x-amz-date",
+            "bucket",
+            "policy",
         ];
         assert_eq!("Succeeded.", result.message);
-        assert_eq!("https://test-bucket.s3.ap-northeast-1.amazonaws.com", result.url);
+        assert_eq!(
+            "https://test-bucket.s3.ap-northeast-1.amazonaws.com",
+            result.url
+        );
         for &key in key_list.iter() {
             println!("check: {}", key);
             assert!(result.policy.contains_key(key));
@@ -234,4 +257,3 @@ mod tests {
         }
     }
 }
-

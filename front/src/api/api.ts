@@ -1,22 +1,5 @@
 import axios from 'axios'
 
-
-/*
-class S3PostPolicy {
-  xAmzSignature: string;
-  xAmzDate: string;
-  xAmzSecurityToken: string;
-  xAmzCredential: string;
-  xAmzAlgorithm: string;
-  policy: string;
-  Content-Type: string;
-  key: string;
-  bucket: string;
-
-  constructor()
-}
-*/
-
 interface S3PostPolicy {
   'x-amz-signature': string,
   'x-amz-date': string,
@@ -35,6 +18,7 @@ interface GetUrlResponse {
   policy: S3PostPolicy,
 }
 
+// eslint-disable-next-line
 const isS3PostPolicy = (arg: any): arg is S3PostPolicy => {
   return (
     arg['x-amz-signature'] !== undefined
@@ -49,6 +33,7 @@ const isS3PostPolicy = (arg: any): arg is S3PostPolicy => {
   )
 }
 
+// eslint-disable-next-line
 const isGetUrlResponse = (arg: any): arg is GetUrlResponse => {
   return (
     arg.message !== undefined
@@ -61,8 +46,8 @@ const isGetUrlResponse = (arg: any): arg is GetUrlResponse => {
 export const getUrl = async (
   contentType: string,
   contentLength: number,
-): GetUrlResponse | null => {
-  const url = process.env.REACT_APP_ENDPOINT
+): Promise<GetUrlResponse | null> => {
+  const url = process.env.REACT_APP_ENDPOINT ?? ''
   
   const data = await axios.post(url, {
     contentType: contentType,

@@ -8,3 +8,5 @@ api/ccov.zip
 api/lcov.info
 
 api/report/
+
+front/.env

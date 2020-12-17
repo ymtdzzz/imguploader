@@ -59,10 +59,10 @@ resources:
                 - GET
             - AllowedHeaders:
                 - '*'
-              AllowedMethods:
-                - POST
               AllowedOrigins:
                 - ${self:custom.frontDomain.${self:provider.stage}}
+              AllowedMethods:
+                - POST
     S3BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:

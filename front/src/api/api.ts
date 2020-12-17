@@ -47,12 +47,19 @@ export const getUrl = async (
   contentType: string,
   contentLength: number,
 ): Promise<GetUrlResponse | null> => {
-  const url = process.env.REACT_APP_ENDPOINT ?? ''
-  
-  const data = await axios.post(url, {
+  const url = process.env.REACT_APP_API_ENDPOINT ?? ''
+
+  let data = await axios.post(url, {
     contentType: contentType,
     contentLength: contentLength,
   })
+
+  if (data.data.body !== undefined) {
+    // response from local api wrapped in 'body' key
+    data = JSON.parse(data.data.body)
+  } else {
+    data = data.data
+  }
   
   if (isGetUrlResponse(data)) {
     return data

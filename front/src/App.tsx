@@ -8,6 +8,7 @@ import SelectImageCard from './components/organisms/SelectImageCard'
 import UploadingCard from './components/organisms/UploadingCard'
 import CompleteCard from './components/organisms/CompleteCard'
 import { TransitionStatus } from 'react-transition-group/Transition'
+import { getUrl } from './api/api'
 
 const MainContainer = styled.div`
   height: 100%;
@@ -57,9 +58,14 @@ function App(): ReactElement {
     }
   }
 
-  const onImageChange = (file: File) => {
+  const onImageChange = async (file: File) => {
     console.log(file)
     showContainer(CONTAINER.UPLOADING)
+
+    const params = await getUrl('image/png', 300)
+
+    console.log(params)
+    
     showContainer(CONTAINER.COMPLETED)
   }
 

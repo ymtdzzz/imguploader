@@ -8,7 +8,7 @@ import SelectImageCard from './components/organisms/SelectImageCard'
 import UploadingCard from './components/organisms/UploadingCard'
 import CompleteCard from './components/organisms/CompleteCard'
 import { TransitionStatus } from 'react-transition-group/Transition'
-import { getUrl } from './api/api'
+import { getUrl, putImage } from './api/api'
 
 const MainContainer = styled.div`
   height: 100%;
@@ -27,10 +27,11 @@ function App(): ReactElement {
   const [isSelectImage, setIsSelectImage] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
 
   useEffect(() => {
     console.log('changed')
-  }, [isSelectImage, isUploading, isCompleted])
+  }, [isSelectImage, isUploading, isCompleted, imageUrl])
 
   enum CONTAINER {
     SELECT_IMAGE,
@@ -58,15 +59,22 @@ function App(): ReactElement {
     }
   }
 
-  const onImageChange = async (file: File) => {
+  const onImageChange = async (file: File): Promise<void> => {
     console.log(file)
     showContainer(CONTAINER.UPLOADING)
 
-    const params = await getUrl('image/png', 300)
-
-    console.log(params)
-    
-    showContainer(CONTAINER.COMPLETED)
+    const params = await getUrl(file.type, file.size)
+    if (params !== null) {
+      const url = await putImage(params, file)
+      if (url !== null) {
+        setImageUrl(url)
+        showContainer(CONTAINER.COMPLETED)
+        return
+      }
+    }
+    // if error, back to SelectImage
+    // TODO: set error message
+    showContainer(CONTAINER.SELECT_IMAGE)
   }
 
   return (
@@ -105,7 +113,7 @@ function App(): ReactElement {
           {status => {
             return (
               <Container status={status}>
-                <CompleteCard />
+                <CompleteCard imageUrl={imageUrl} />
               </Container>
             )
           }}

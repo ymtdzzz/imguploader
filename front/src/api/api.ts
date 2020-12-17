@@ -69,11 +69,32 @@ export const getUrl = async (
   }
 }
 
-/*
 export const putImage = async (
-  policy: S3PostPolicy,
+  getUrlRepsponse: GetUrlResponse,
+  file: File,
   // TODO: file-path, etc
-): Promise<AxiosResponse<any>> => {
-  // TODO:
+): Promise<string | null> => {
+  const data = new FormData()
+
+  // marshal policy instance
+  data.append('policy', getUrlRepsponse.policy.policy)
+  data.append('x-amz-signature', getUrlRepsponse.policy['x-amz-signature'])
+  data.append('x-amz-date', getUrlRepsponse.policy['x-amz-date'])
+  data.append('x-amz-security-token', getUrlRepsponse.policy['x-amz-security-token'])
+  data.append('x-amz-credential', getUrlRepsponse.policy['x-amz-credential'])
+  data.append('x-amz-algorithm', getUrlRepsponse.policy['x-amz-algorithm'])
+  data.append('Content-Type', file.type)
+  data.append('key', getUrlRepsponse.policy.key),
+  data.append('bucket', getUrlRepsponse.policy.bucket)
+  data.append('file', file)
+
+  await axios.post(
+    `${getUrlRepsponse.url}/${getUrlRepsponse.policy.bucket}`,
+    data,
+  )
+
+  const s3Url = process.env.REACT_APP_S3_ENDPOINT
+
+  return `${s3Url ?? ''}/${getUrlRepsponse.policy.bucket}/${getUrlRepsponse.policy.key}`
 }
-*/
+

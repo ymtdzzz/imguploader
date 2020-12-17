@@ -47,7 +47,44 @@ resources:
     Bucket:
       Type: AWS::S3::Bucket
       Properties:
+        AccessControl: PublicRead
         BucketName: ${self:custom.bucketName.${self:provider.stage}}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - '*'
+              AllowedOrigins:
+                - '*'
+              AllowedMethods:
+                - GET
+            - AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - POST
+              AllowedOrigins:
+                - ${self:custom.frontDomain.${self:provider.stage}}
+    S3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: Bucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+              - S3:GetObject
+              Resource:
+                Fn::Join: [
+                  "", [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "Bucket"
+                    },
+                    "/*"
+                  ]
+                ]
 
 custom:
   defaultStage: dev
@@ -65,3 +102,7 @@ custom:
     local: local
     dev: ''
     release: ''
+  frontDomain:
+    local: 'http://localhost:3001'
+    dev: 'https://d.imguploader.zeroclock.dev'
+    release: 'https://imguploader.zeroclock.dev'

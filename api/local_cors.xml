@@ -1,0 +1,7 @@
+<CORSConfiguration>
+ <CORSRule>
+   <AllowedOrigin>http://localhost:3001</AllowedOrigin>
+   <AllowedMethod>POST</AllowedMethod>
+   <AllowedHeader>*</AllowedHeader>
+ </CORSRule>
+</CORSConfiguration>

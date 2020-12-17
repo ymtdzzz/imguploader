@@ -56,6 +56,7 @@ custom:
     directory: /tmp
     port: 8000
     vhostBuckets: false
+    cors: ./local_cors.xml
   bucketName:
     local: offline-imguploader
     dev: zeroclock-imguploader-development

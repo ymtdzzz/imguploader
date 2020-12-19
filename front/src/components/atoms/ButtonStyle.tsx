@@ -4,7 +4,7 @@ const ButtonStyle = css`
   display: inline-block;
   background-color: #2F80ED;
   border-radius: 10px;
-  padding: 10px 20px;
+  padding: 0.1rem 0.2rem;
   color: white;
   transition: background-color 0.15s;
   &:hover {

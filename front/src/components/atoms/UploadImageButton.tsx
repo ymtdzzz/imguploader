@@ -8,6 +8,7 @@ const Button = styled.input`
 
 const ButtonContainer = styled.label`
   ${ButtonStyle}
+  padding: 0.6rem 0.8rem;
 `
 
 export interface Props {

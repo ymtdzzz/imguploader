@@ -2,9 +2,11 @@ use anyhow::{anyhow, Result};
 use chrono::{Duration, Utc};
 use lambda::{handler_fn, Context};
 use log::{error, LevelFilter};
+use rand::Rng;
 use rusoto_core::Region;
 use rusoto_signature::PostPolicy;
 use serde_derive::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use simple_logger::SimpleLogger;
 use std::collections::HashMap;
 use std::env;
@@ -66,16 +68,18 @@ async fn geturl(event: CustomEvent, c: Context) -> Result<CustomOutput> {
         error!("Content-Length is too long in request {}", c.request_id);
         return Err(anyhow!(get_err_msg(400, MSG_CONTENT_LENGTH_TOO_LONG)));
     }
-    if !content_type.starts_with("image/") {
+    let ct_prefix = "image/";
+    if !content_type.starts_with(ct_prefix) || !(content_type.len() > (ct_prefix.len() + 1)) {
         error!(
-            "Content-Type doesn't start with image/ in request {}",
+            "Content-Type doesn't start with 'image/' or subtype is empty in request {}",
             c.request_id
         );
         return Err(anyhow!(get_err_msg(400, MSG_WRONG_CONTENT_TYPE)));
     }
 
     let bucket_name = env::var(BUCKET_NAME_KEY)?;
-    let (url, policy) = get_policy(&bucket_name, "test.txt", content_length, &content_type).await?;
+    let file_name = generate_random_filename(&content_type)?;
+    let (url, policy) = get_policy(&bucket_name, &file_name, content_length, &content_type).await?;
 
     Ok(CustomOutput {
         message: format!("Succeeded."),
@@ -134,6 +138,29 @@ async fn get_policy(
 
 fn get_err_msg(code: u16, msg: &str) -> String {
     format!("[{}] {}", code, msg)
+}
+
+fn generate_random_filename(mime: &str) -> Result<String> {
+    let mut rng = rand::thread_rng();
+
+    let random_nums: u64 = rng.gen();
+
+    let source = format!("{}", random_nums);
+    let mut hasher = Sha256::new();
+    hasher.update(source.as_bytes());
+    let result = hasher.finalize()[..]
+        .iter()
+        .map(|n| format!("{:02X}", n))
+        .collect::<String>()
+        .to_lowercase();
+
+    let extension = mime_guess::get_mime_extensions_str(mime);
+
+    if let Some(ext) = extension {
+        Ok(format!("{}.{}", result, ext[0]))
+    } else {
+        Err(anyhow!("malformed mime type: {}", mime))
+    }
 }
 
 #[cfg(test)]
@@ -255,5 +282,15 @@ mod tests {
             // result must be Err
             panic!()
         }
+    }
+
+    #[test]
+    fn test_generate_random() {
+        let mime_type = "image/png";
+        let result = generate_random_filename(mime_type).unwrap();
+        let result2 = generate_random_filename(mime_type).unwrap();
+        // TODO: more meaningful assersion
+        assert!(result.contains("png"));
+        assert_ne!(result, result2);
     }
 }

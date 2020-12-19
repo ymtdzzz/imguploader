@@ -78,6 +78,11 @@ resources:
                 - ${self:custom.frontDomain.${self:provider.stage}}
               AllowedMethods:
                 - POST
+        LifecycleConfiguration:
+          Rules:
+            - Id: 'ExpirationRule'
+              Status: 'Enabled'
+              ExpirationInDays: 1
     S3BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:

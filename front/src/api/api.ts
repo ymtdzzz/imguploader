@@ -109,8 +109,13 @@ export const putImage = async (
   data.append('bucket', getUrlRepsponse.policy.bucket)
   data.append('file', file)
 
+  let url = `${getUrlRepsponse.url}`
+  if (process.env.NODE_ENV == 'development') {
+    url = `${url}/${getUrlRepsponse.policy.bucket}`
+  }
+
   await axios.post(
-    `${getUrlRepsponse.url}/${getUrlRepsponse.policy.bucket}`,
+    url,
     data,
   ).catch((e) => {
     return {
@@ -118,8 +123,14 @@ export const putImage = async (
     }
   })
 
-  const s3Url = process.env.REACT_APP_S3_ENDPOINT
+  let s3Url = process.env.REACT_APP_S3_ENDPOINT ?? ''
+  if (process.env.NODE_ENV == 'development') {
+    s3Url = `${s3Url}/${getUrlRepsponse.policy.bucket}/${getUrlRepsponse.policy.key}`
+  } else {
+    s3Url = `${s3Url}/${getUrlRepsponse.policy.key}`
+  }
+  console.log(s3Url)
 
-  return `${s3Url ?? ''}/${getUrlRepsponse.policy.bucket}/${getUrlRepsponse.policy.key}`
+  return s3Url
 }
 

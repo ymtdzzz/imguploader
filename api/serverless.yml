@@ -38,6 +38,11 @@ functions:
           request:
             template:
               application/json: $input.json('$')
+          cors:
+            origin: ${self:custom.frontDomain.${self:provider.stage}}
+            headers:
+              - '*'
+            allowCredentials: false
     environment:
       BUCKET_NAME: ${self:custom.bucketName.${self:provider.stage}}
       LOCAL_FLAG: ${self:custom.localFlag.${self:provider.stage}}

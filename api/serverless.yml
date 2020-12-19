@@ -18,6 +18,16 @@ provider:
           - - "arn:aws:s3:::"
             - ${self:custom.bucketName.${self:provider.stage}}
             - "/*"
+  usagePlan:
+    name: 'usage-plan-for-frontend'
+    description: 'API key for frontend'
+    quota:
+      limit: 500
+      period: DAY
+    throttle:
+      burstLimit: 50
+      rateLimit: 10
+    value: testapikey
 
 package:
   individually: true

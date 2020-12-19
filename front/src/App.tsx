@@ -1,14 +1,15 @@
-import React, { ReactElement, useState, useEffect } from 'react'
+import React, { ReactElement, useState, useEffect, useRef } from 'react'
 import { Reset } from 'styled-reset'
 import styled from 'styled-components'
 import { Transition } from 'react-transition-group'
+import NotificationSystem, { System } from 'react-notification-system'
 
 import GlobalStyle from './components/GlobalStyle'
 import SelectImageCard from './components/organisms/SelectImageCard'
 import UploadingCard from './components/organisms/UploadingCard'
 import CompleteCard from './components/organisms/CompleteCard'
 import { TransitionStatus } from 'react-transition-group/Transition'
-import { getUrl, putImage } from './api/api'
+import { Error, getUrl, isError, putImage } from './api/api'
 
 const MainContainer = styled.div`
   height: 100%;
@@ -28,6 +29,8 @@ function App(): ReactElement {
   const [isUploading, setIsUploading] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
+
+  const notificationSystem = useRef<System>(null)
 
   useEffect(() => {
     console.log('changed')
@@ -64,17 +67,30 @@ function App(): ReactElement {
     showContainer(CONTAINER.UPLOADING)
 
     const params = await getUrl(file.type, file.size)
-    if (params !== null) {
+    if (!isError(params)) {
       const url = await putImage(params, file)
-      if (url !== null) {
+      if (!isError(url)) {
         setImageUrl(url)
         showContainer(CONTAINER.COMPLETED)
         return
+      } else {
+        addErrorNotification(url)
       }
+    } else {
+      addErrorNotification(params)
     }
-    // if error, back to SelectImage
-    // TODO: set error message
     showContainer(CONTAINER.SELECT_IMAGE)
+  }
+
+  const addErrorNotification = (error: Error) => {
+    const notification = notificationSystem.current
+    if (notification !== null) {
+      notification.addNotification({
+        message: `Failed to upload your image. Please try again. \n(${error.message})`,
+        level: 'error',
+        position: 'bc',
+      })
+    }
   }
 
   return (
@@ -119,6 +135,7 @@ function App(): ReactElement {
           }}
         </Transition>
       </MainContainer>
+      <NotificationSystem ref={notificationSystem} />
     </>
   )
 }

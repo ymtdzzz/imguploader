@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 
 interface S3PostPolicy {
   'x-amz-signature': string,
@@ -64,6 +64,19 @@ export const getUrl = async (
   let data: AxiosResponse | Error = await axios.post(url, {
     contentType: contentType,
     contentLength: contentLength,
+  }).catch((e: AxiosError) => {
+    if (e.response) {
+      delete e.response.data['stackTrace']
+      const code = e.response.status
+      const msg = JSON.stringify(e.response.data)
+      return {
+        message: `code: ${code}, msg: ${msg}`
+      }
+    } else {
+      return {
+        message: e.toString()
+      }
+    }
   }).catch((e) => {
     return {
       message: e.toString()
@@ -117,7 +130,20 @@ export const putImage = async (
   await axios.post(
     url,
     data,
-  ).catch((e) => {
+  ).catch((e: AxiosError) => {
+    if (e.response) {
+      delete e.response.data['stackTrace']
+      const code = e.response.status
+      const msg = JSON.stringify(e.response.data)
+      return {
+        message: `code: ${code}, msg: ${msg}`
+      }
+    } else {
+      return {
+        message: e.toString()
+      }
+    }
+  }).catch((e) => {
     return {
       message: e.toString()
     }

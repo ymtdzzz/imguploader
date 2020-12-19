@@ -1819,6 +1819,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-notification-system@^0.2.40":
+  version "0.2.40"
+  resolved "https://registry.yarnpkg.com/@types/react-notification-system/-/react-notification-system-0.2.40.tgz#bd0075f58a92074d689b42eac3c0fbe9b1dce723"
+  integrity sha512-clq+SpMSqbKsciuxsr0x7wlS0FCO4QhyZvfiA5j6LfgLRLFLje8zhSr3eYaaPRXI5ncTktJXi0IOISELzeKy8w==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-transition-group@^4.4.0":
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.0.tgz#882839db465df1320e4753e6e9f70ca7e9b4d46d"
@@ -9198,7 +9205,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.4"
 
-prop-types@^15.5.8, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.5.6, prop-types@^15.5.8, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -9434,6 +9441,14 @@ react-is@^17.0.1:
   version "17.0.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.1.tgz#5b3531bd76a645a4c9fb6e693ed36419e3301339"
   integrity sha512-NAnt2iGDXohE5LI7uBnLnqvLQMtzhkiAOLXTmv+qnF9Ky7xAPcX8Up/xWIhxvLVGJvuLiNc4xQLtuqDRzb4fSA==
+
+react-notification-system@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/react-notification-system/-/react-notification-system-0.4.0.tgz#30db3963a176ee103b4a3bb1494c2b5578d5c024"
+  integrity sha512-5WhXnjkYC07zqXruCiUXDU9iHjVxZlL1zgHpNgXk91A5ghV1AHrWVrJYo1XM4SnwlKy5NLdftkaTl+pTuVFAqw==
+  dependencies:
+    object-assign "^4.0.1"
+    prop-types "^15.5.6"
 
 react-refresh@^0.8.3:
   version "0.8.3"

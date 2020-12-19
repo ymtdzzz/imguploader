@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 interface S3PostPolicy {
   'x-amz-signature': string,
@@ -16,6 +16,18 @@ interface GetUrlResponse {
   message: string,
   url: string,
   policy: S3PostPolicy,
+}
+
+export interface Error {
+  message: string,
+}
+
+// eslint-disable-next-line
+export const isError = (arg: any): arg is Error => {
+  return (
+    arg.message !== undefined
+    && Object.keys(arg).length === 1
+  )
 }
 
 // eslint-disable-next-line
@@ -46,13 +58,21 @@ const isGetUrlResponse = (arg: any): arg is GetUrlResponse => {
 export const getUrl = async (
   contentType: string,
   contentLength: number,
-): Promise<GetUrlResponse | null> => {
+): Promise<GetUrlResponse | Error> => {
   const url = process.env.REACT_APP_API_ENDPOINT ?? ''
 
-  let data = await axios.post(url, {
+  let data: AxiosResponse | Error = await axios.post(url, {
     contentType: contentType,
     contentLength: contentLength,
+  }).catch((e) => {
+    return {
+      message: e.toString()
+    }
   })
+
+  if (isError(data)) {
+    return data
+  }
 
   if (data.data.body !== undefined) {
     // response from local api wrapped in 'body' key
@@ -64,8 +84,9 @@ export const getUrl = async (
   if (isGetUrlResponse(data)) {
     return data
   } else {
-    console.log('data is not GetUrlResponse!')
-    return null
+    return {
+      message: 'received data is malformed'
+    }
   }
 }
 
@@ -73,7 +94,7 @@ export const putImage = async (
   getUrlRepsponse: GetUrlResponse,
   file: File,
   // TODO: file-path, etc
-): Promise<string | null> => {
+): Promise<string | Error> => {
   const data = new FormData()
 
   // marshal policy instance
@@ -91,7 +112,11 @@ export const putImage = async (
   await axios.post(
     `${getUrlRepsponse.url}/${getUrlRepsponse.policy.bucket}`,
     data,
-  )
+  ).catch((e) => {
+    return {
+      message: e.toString()
+    }
+  })
 
   const s3Url = process.env.REACT_APP_S3_ENDPOINT
 

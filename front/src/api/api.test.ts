@@ -55,7 +55,7 @@ describe('getUrl', () => {
     await expect(getUrl('image/png', 3000)).resolves.toEqual(data)
   })
 
-  it('returns null when policy is not malformed', async () => {
+  it('returns Error when policy is malformed', async () => {
     const data = {
       message: 'Succeeded',
       url: 'http://offline-imguploader.localhost:8000',
@@ -64,22 +64,30 @@ describe('getUrl', () => {
       },
     }
 
-    axios.post.mockImplementationOnce(() => Promise.resolve({
-      data: data
-    }))
-
-    await expect(getUrl('image/png', 3000)).resolves.toBeNull()
-  })
-
-  it('returns null when data is not malformed', async () => {
-    const data = {
-      malformed: 'wrong data!!!'
+    const expected = {
+      message: 'received data is malformed'
     }
 
     axios.post.mockImplementationOnce(() => Promise.resolve({
       data: data
     }))
 
-    await expect(getUrl('image/png', 3000)).resolves.toBeNull()
+    await expect(getUrl('image/png', 3000)).resolves.toStrictEqual(expected)
+  })
+
+  it('returns null when data is malformed', async () => {
+    const data = {
+      malformed: 'wrong data!!!'
+    }
+
+    const expected = {
+      message: 'received data is malformed'
+    }
+
+    axios.post.mockImplementationOnce(() => Promise.resolve({
+      data: data
+    }))
+
+    await expect(getUrl('image/png', 3000)).resolves.toStrictEqual(expected)
   })
 })

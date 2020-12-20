@@ -19,6 +19,8 @@ const MainContainer = styled.div`
 `
 
 const Container = styled.div<{status: TransitionStatus}>`
+  width: 100%;
+  box-sizing: border-box;
   transition: .2s;
   opacity: ${({status}) => status === 'entered' ? 1 : 0};
   display: ${({status}) => status === 'exited' ? 'none' : 'block'};

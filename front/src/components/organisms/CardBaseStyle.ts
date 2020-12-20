@@ -8,6 +8,11 @@ const CardBaseStyle = styled.div`
   text-align: center;
   padding: 30px;
   box-shadow: 0 5px 10px 0 rgba(0, 0, 0, .1);
+  margin: auto;
+  @media (max-width: 768px) {
+    min-width: 80%;
+    width: 80%;
+  }
 `
 
 export default CardBaseStyle

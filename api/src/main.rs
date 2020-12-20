@@ -289,8 +289,14 @@ mod tests {
         let mime_type = "image/png";
         let result = generate_random_filename(mime_type).unwrap();
         let result2 = generate_random_filename(mime_type).unwrap();
-        // TODO: more meaningful assersion
         assert!(result.contains("png"));
         assert_ne!(result, result2);
+    }
+
+    #[test]
+    fn test_generate_random_with_malformed_mime() {
+        let mime_type = "image/wrongimagetype";
+        let result = generate_random_filename(mime_type);
+        assert!(result.is_err());
     }
 }

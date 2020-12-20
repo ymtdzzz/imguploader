@@ -8,9 +8,9 @@ An example implementation of Image Uploader (from devchallenges: [Image Uploader
 
 **Notice that you SHOULD NOT upload private images!**
 
-## Limitaions
+## Limitations
 
-This project is for demo, so there are some limitaions:
+This project is for demo, so there are some limitations:
 
 | request             | limitation         |
 | ------------------- | ------------------ |

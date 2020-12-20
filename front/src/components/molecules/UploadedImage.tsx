@@ -1,6 +1,7 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useRef } from 'react'
 import styled from 'styled-components'
 import CopyToClipBoard from 'react-copy-to-clipboard'
+import NotificationSystem, { System } from 'react-notification-system'
 
 import ButtonStyle from '../atoms/ButtonStyle'
 
@@ -41,17 +42,31 @@ export interface Props {
 }
 
 function UploadedImage(props: Props): ReactElement {
+  const notificationSystem = useRef<System>(null)
+
+  const onCopyClicked = () => {
+    const notification = notificationSystem.current
+    if (notification != null) {
+      notification.addNotification({
+        message: 'Copied!',
+        level: 'info',
+        position: 'bc',
+      })
+    }
+  } 
+  
   return (
     <>
       <ImageContainer data-testid="uploaded-image">
         <img src={props.imageUrl} />
       </ImageContainer>
       <CopyToClipBoard text={props.imageUrl}>
-        <CopyContainer data-testid="uploaded-image-copy">
+        <CopyContainer data-testid="uploaded-image-copy" onClick={onCopyClicked}>
           <p>{props.imageUrl}</p>
           <Button data-link={props.imageUrl}>Copy Link</Button>
         </CopyContainer>
       </CopyToClipBoard>
+      <NotificationSystem ref={notificationSystem} />
     </>
   )
 }

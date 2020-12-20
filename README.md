@@ -1,4 +1,6 @@
 # imguploader
+[![Build Status](https://travis-ci.org/zeroclock/imguploader.svg?branch=master)](https://travis-ci.org/zeroclock/imguploader) (master) [![Build Status](https://travis-ci.org/zeroclock/imguploader.svg?branch=development)](https://travis-ci.org/zeroclock/imguploader) (development) [![Build Status](https://travis-ci.org/zeroclock/imguploader.svg?branch=release)](https://travis-ci.org/zeroclock/imguploader) (release)
+[![codecov](https://codecov.io/gh/zeroclock/imguploader/branch/master/graph/badge.svg?token=43SMDKSRMB)](https://codecov.io/gh/zeroclock/imguploader)
 
 [https://imguploader.zeroclock.dev/](https://imguploader.zeroclock.dev/)
 

@@ -74,12 +74,8 @@ export const getUrl = async (
       }
     } else {
       return {
-        message: e.toString()
+        message: JSON.stringify(e)
       }
-    }
-  }).catch((e) => {
-    return {
-      message: e.toString()
     }
   })
 
@@ -108,6 +104,7 @@ export const putImage = async (
   file: File,
   // TODO: file-path, etc
 ): Promise<string | Error> => {
+  let err = null
   const data = new FormData()
 
   // marshal policy instance
@@ -135,19 +132,19 @@ export const putImage = async (
       delete e.response.data['stackTrace']
       const code = e.response.status
       const msg = JSON.stringify(e.response.data)
-      return {
+      err = {
         message: `code: ${code}, msg: ${msg}`
       }
     } else {
-      return {
-        message: e.toString()
+      err = {
+        message: JSON.stringify(e)
       }
     }
-  }).catch((e) => {
-    return {
-      message: e.toString()
-    }
   })
+
+  if (err != null) {
+    return err
+  }
 
   let s3Url = process.env.REACT_APP_S3_ENDPOINT ?? ''
   if (process.env.NODE_ENV == 'development') {
@@ -155,7 +152,6 @@ export const putImage = async (
   } else {
     s3Url = `${s3Url}/${getUrlRepsponse.policy.key}`
   }
-  console.log(s3Url)
 
   return s3Url
 }

@@ -116,7 +116,7 @@ function App(): ReactElement {
         >
           {status => {
             return (
-              <Container status={status}>
+              <Container status={status} data-testid='app-uploading-card'>
                 <UploadingCard />
               </Container>
             )
@@ -128,7 +128,7 @@ function App(): ReactElement {
         >
           {status => {
             return (
-              <Container status={status}>
+              <Container status={status} data-testid='app-complete-card'>
                 <CompleteCard imageUrl={imageUrl} />
               </Container>
             )

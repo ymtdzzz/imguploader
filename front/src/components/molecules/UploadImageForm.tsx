@@ -39,7 +39,6 @@ export interface Props {
 
 // Dropzone settings
 const acceptFile = 'image/*'
-const maxFileSize = 1048576
 
 function UploadImageForm(props: Props): ReactElement<Props> {
   const [isDragOver, setIsDragOver] = React.useState(false)
@@ -73,7 +72,7 @@ function UploadImageForm(props: Props): ReactElement<Props> {
     setIsDragOver(false)
   }
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: acceptFile, minSize: 0, maxSize: maxFileSize, multiple: false})
+  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: acceptFile, minSize: 0, multiple: false})
   
   return (
     <>

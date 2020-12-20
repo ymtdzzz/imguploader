@@ -27,6 +27,8 @@ Make sure you have installed all of the following prerequisites on your developm
 - Python3 - needed for aws cli.
 - AWS CLI 2 - follow [this instruction](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 - Docker
+- Rust
+- lcov
 
 Clone this repository to your machine and cd. 
 
@@ -50,12 +52,22 @@ npm i -g serverless
 sls --version
 ```
 
+Install `grcov`
+
+```
+cargo install grcov
+```
+
 ### Api
 
 ```
 cd api
 npm i
 AWS_PROFILE=s3local sls offline start --stage local
+# test
+cargo test
+# test (coverage)
+yarn coverage # report file will be created to report/index.html
 ```
 
 ### Front
@@ -64,6 +76,10 @@ AWS_PROFILE=s3local sls offline start --stage local
 cd front
 yarn
 yarn start
+# test
+yarn test
+# test (coverage)
+yarn test --coverage --watchAll=false # report file will be created to coverage/lcov-report/index.html
 ```
 
 ## Contributing
